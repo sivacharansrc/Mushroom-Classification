@@ -28,7 +28,7 @@ case.cap.surface <- list(
   !! cap.surface == "f" ~ "fibrous",
   !! cap.surface == "g" ~ "grooves",
   !! cap.surface == "y" ~ "scaly",
-  TRUE ~ "fibrous")
+  TRUE ~ "smooth")
 
 case.cap.color <- list(
   !! cap.color == "n" ~ "brown",
@@ -215,6 +215,10 @@ df <- mutate(df,
              habitat = case_when(!!! case.habitat))
 
 
-df <- lapply(df, FUN = as.factor)
+df <- data.frame(lapply(df, FUN = as.factor))
+
+#### SUMMARY STATS #####
+
+summary(df)
 
 
