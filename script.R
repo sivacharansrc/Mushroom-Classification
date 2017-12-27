@@ -215,4 +215,6 @@ df <- mutate(df,
              habitat = case_when(!!! case.habitat))
 
 
+df <- lapply(df, FUN = as.factor)
+
 
