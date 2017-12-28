@@ -1,0 +1,230 @@
+[1mdiff --git a/script.R b/script.R[m
+[1mindex c2e2553..5183f7b 100644[m
+[1m--- a/script.R[m
+[1m+++ b/script.R[m
+[36m@@ -1,20 +1,34 @@[m
+[31m-[m
+[32m+[m[32m####### SETTING UP THE ENVIRONMENT[m
+ rm(list = ls())[m
+ options(scipen = 999)[m
+ library(dplyr)[m
+ [m
+ ### READING SOURCE FILE ####[m
+ [m
+[31m-data <- read.csv("~/R Projects/Mushroom-Classification/src/mushrooms.csv")[m
+[32m+[m[32mdataSource <- read.csv("~/R Projects/Mushroom-Classification/src/mushrooms.csv",[m
+[32m+[m[32m                 stringsAsFactors = F)[m
+[32m+[m
+[32m+[m[32mdf <- dataSource %>% rename(classification = class)[m
+ [m
+[31m-names(data)[m
+[32m+[m
+[32m+[m[32mcase.class <- list([m
+[32m+[m[32m  !! classification == "e" ~ "edible",[m
+[32m+[m[32m  TRUE ~ "poisonous")[m
+ [m
+ [m
+[31m-df <- select(data,[m
+[31m-             classifcation = class,[m
+[31m-             cap.color,[m
+[31m-             odor,[m
+[31m-             habitat)[m
+[32m+[m[32mcase.cap.shape <- list([m
+[32m+[m[32m  !! cap.shape == "b" ~ "bell",[m
+[32m+[m[32m  !! cap.shape == "c" ~ "conical",[m
+[32m+[m[32m  !! cap.shape == "x" ~ "convex",[m
+[32m+[m[32m  !! cap.shape == "f" ~ "flat",[m
+[32m+[m[32m  !! cap.shape == "k" ~ "knobbed",[m
+[32m+[m[32m  TRUE ~ "sunken")[m
+[32m+[m
+[32m+[m[32mcase.cap.surface <- list([m
+[32m+[m[32m  !! cap.surface == "f" ~ "fibrous",[m
+[32m+[m[32m  !! cap.surface == "g" ~ "grooves",[m
+[32m+[m[32m  !! cap.surface == "y" ~ "scaly",[m
+[32m+[m[32m  TRUE ~ "fibrous")[m
+ [m
+ case.cap.color <- list([m
+   !! cap.color == "n" ~ "brown",[m
+[36m@@ -28,6 +42,10 @@[m [mcase.cap.color <- list([m
+   !! cap.color == "c" ~ "cinnamon",[m
+   TRUE ~ "green")[m
+ [m
+[32m+[m[32mcase.bruises <- list([m
+[32m+[m[32m  !! bruises == "t" ~ "bruises",[m
+[32m+[m[32m  TRUE ~ "no")[m
+[32m+[m
+ case.odor <- list([m
+   !! odor == "a" ~ "almond",[m
+   !! odor == "l" ~ "anise",[m
+[36m@@ -39,6 +57,128 @@[m [mcase.odor <- list([m
+   !! odor == "p" ~ "pungent",[m
+   TRUE ~ "spicy")[m
+ [m
+[32m+[m[32mcase.gill.attachment <- list([m
+[32m+[m[32m  !! gill.attachment == "a" ~ "attached",[m
+[32m+[m[32m  !! gill.attachment == "d" ~ "descending",[m
+[32m+[m[32m  !! gill.attachment == "f" ~ "free",[m
+[32m+[m[32m  TRUE ~ "notched")[m
+[32m+[m
+[32m+[m[32mcase.gill.spacing <- list([m
+[32m+[m[32m  !! gill.spacing == "c" ~ "close",[m
+[32m+[m[32m  !! gill.spacing == "w" ~ "crowded",[m
+[32m+[m[32m  TRUE ~ "distant")[m
+[32m+[m
+[32m+[m[32mcase.gill.size <- list([m
+[32m+[m[32m  !! gill.size == "b" ~ "broad",[m
+[32m+[m[32m  TRUE ~ "narrow")[m
+[32m+[m
+[32m+[m[32mcase.gill.color <- list([m
+[32m+[m[32m  !! gill.color == "n" ~ "brown",[m
+[32m+[m[32m  !! gill.color == "y" ~ "yellow",[m
+[32m+[m[32m  !! gill.color == "w" ~ "white",[m
+[32m+[m[32m  !! gill.color == "g" ~ "gray",[m
+[32m+[m[32m  !! gill.color == "e" ~ "red",[m
+[32m+[m[32m  !! gill.color == "p" ~ "pink",[m
+[32m+[m[32m  !! gill.color == "b" ~ "buff",[m
+[32m+[m[32m  !! gill.color == "u" ~ "purple",[m
+[32m+[m[32m  !! gill.color == "c" ~ "cinnamon",[m
+[32m+[m[32m  !! gill.color == "k" ~ "black",[m
+[32m+[m[32m  !! gill.color == "h" ~ "chocolate",[m
+[32m+[m[32m  !! gill.color == "o" ~ "orange",[m
+[32m+[m[32m  TRUE ~ "green")[m
+[32m+[m
+[32m+[m[32mcase.stalk.shape <- list([m
+[32m+[m[32m  !! stalk.shape == "e" ~ "enlarging",[m
+[32m+[m[32m  TRUE ~ "tapering")[m
+[32m+[m
+[32m+[m[32mcase.stalk.root <- list([m
+[32m+[m[32m  !! stalk.root == "b" ~ "bulbous",[m
+[32m+[m[32m  !! stalk.root == "c" ~ "club",[m
+[32m+[m[32m  !! stalk.root == "u" ~ "cup",[m
+[32m+[m[32m  !! stalk.root == "e" ~ "equal",[m
+[32m+[m[32m  !! stalk.root == "z" ~ "rhizomorphs",[m
+[32m+[m[32m  !! stalk.root == "r" ~ "rooted",[m
+[32m+[m[32m  TRUE ~ "missing")[m
+[32m+[m
+[32m+[m[32mcase.stalk.surface.above.ring <- list([m
+[32m+[m[32m  !! stalk.surface.above.ring == "f" ~ "fibrous",[m
+[32m+[m[32m  !! stalk.surface.above.ring == "y" ~ "scaly",[m
+[32m+[m[32m  !! stalk.surface.above.ring == "k" ~ "silky",[m
+[32m+[m[32m  TRUE ~ "smooth")[m
+[32m+[m
+[32m+[m[32mcase.stalk.surface.below.ring <- list([m
+[32m+[m[32m  !! stalk.surface.below.ring == "f" ~ "fibrous",[m
+[32m+[m[32m  !! stalk.surface.below.ring == "y" ~ "scaly",[m
+[32m+[m[32m  !! stalk.surface.below.ring == "k" ~ "silky",[m
+[32m+[m[32m  TRUE ~ "smooth")[m
+[32m+[m
+[32m+[m[32mcase.stalk.color.above.ring <- list([m
+[32m+[m[32m  !! stalk.color.above.ring == "n" ~ "brown",[m
+[32m+[m[32m  !! stalk.color.above.ring == "y" ~ "yellow",[m
+[32m+[m[32m  !! stalk.color.above.ring == "w" ~ "white",[m
+[32m+[m[32m  !! stalk.color.above.ring == "g" ~ "gray",[m
+[32m+[m[32m  !! stalk.color.above.ring == "e" ~ "red",[m
+[32m+[m[32m  !! stalk.color.above.ring == "p" ~ "pink",[m
+[32m+[m[32m  !! stalk.color.above.ring == "b" ~ "buff",[m
+[32m+[m[32m  !! stalk.color.above.ring == "c" ~ "cinnamon",[m
+[32m+[m[32m  TRUE ~ "orange")[m
+[32m+[m
+[32m+[m[32mcase.stalk.color.below.ring <- list([m
+[32m+[m[32m  !! stalk.color.below.ring == "n" ~ "brown",[m
+[32m+[m[32m  !! stalk.color.below.ring == "y" ~ "yellow",[m
+[32m+[m[32m  !! stalk.color.below.ring == "w" ~ "white",[m
+[32m+[m[32m  !! stalk.color.below.ring == "g" ~ "gray",[m
+[32m+[m[32m  !! stalk.color.below.ring == "e" ~ "red",[m
+[32m+[m[32m  !! stalk.color.below.ring == "p" ~ "pink",[m
+[32m+[m[32m  !! stalk.color.below.ring == "b" ~ "buff",[m
+[32m+[m[32m  !! stalk.color.below.ring == "c" ~ "cinnamon",[m
+[32m+[m[32m  TRUE ~ "orange")[m
+[32m+[m
+[32m+[m[32mcase.veil.type <- list([m
+[32m+[m[32m  !! veil.type == "p" ~ "partial",[m
+[32m+[m[32m  TRUE ~ "universal")[m
+[32m+[m
+[32m+[m
+[32m+[m[32mcase.veil.color <- list([m
+[32m+[m[32m  !! veil.color == "n" ~ "brown",[m
+[32m+[m[32m  !! veil.color == "o" ~ "orange",[m
+[32m+[m[32m  !! veil.color == "w" ~ "white",[m
+[32m+[m[32m  TRUE ~ "yellow")[m
+[32m+[m
+[32m+[m[32mcase.ring.number <- list([m
+[32m+[m[32m  !! ring.number == "n" ~ "none",[m
+[32m+[m[32m  !! ring.number == "o" ~ "one",[m
+[32m+[m[32m  TRUE ~ "two")[m
+[32m+[m
+[32m+[m[32mcase.ring.type <- list([m
+[32m+[m[32m  !! ring.type == "c" ~ "cobwebby",[m
+[32m+[m[32m  !! ring.type == "e" ~ "evanescent",[m
+[32m+[m[32m  !! ring.type == "f" ~ "flaring",[m
+[32m+[m[32m  !! ring.type == "l" ~ "large",[m
+[32m+[m[32m  !! ring.type == "n" ~ "none",[m
+[32m+[m[32m  !! ring.type == "p" ~ "pendant",[m
+[32m+[m[32m  !! ring.type == "s" ~ "sheathing",[m
+[32m+[m[32m  TRUE ~ "zone")[m
+[32m+[m
+[32m+[m[32mcase.spore.print.color <- list([m
+[32m+[m[32m  !! spore.print.color == "n" ~ "brown",[m
+[32m+[m[32m  !! spore.print.color == "y" ~ "yellow",[m
+[32m+[m[32m  !! spore.print.color == "w" ~ "white",[m
+[32m+[m[32m  !! spore.print.color == "h" ~ "chocolate",[m
+[32m+[m[32m  !! spore.print.color == "r" ~ "green",[m
+[32m+[m[32m  !! spore.print.color == "u" ~ "purple",[m
+[32m+[m[32m  !! spore.print.color == "b" ~ "buff",[m
+[32m+[m[32m  !! spore.print.color == "k" ~ "black",[m
+[32m+[m[32m  TRUE ~ "orange")[m
+[32m+[m
+[32m+[m[32mcase.population <- list([m
+[32m+[m[32m  !! population == "a" ~ "abundant",[m
+[32m+[m[32m  !! population == "c" ~ "clustered",[m
+[32m+[m[32m  !! population == "n" ~ "numerous",[m
+[32m+[m[32m  !! population == "s" ~ "scattered",[m
+[32m+[m[32m  !! population == "v" ~ "several",[m
+[32m+[m[32m  TRUE ~ "solitary")[m
+[32m+[m
+ case.habitat <- list([m
+   !! habitat == "g" ~ "grasses",[m
+   !! habitat == "l" ~ "leaves",[m
+[36m@@ -48,19 +188,31 @@[m [mcase.habitat <- list([m
+   !! habitat == "w" ~ "waste",[m
+   TRUE ~ "woods")[m
+ [m
+[31m-case.class <- list([m
+[31m-   classification == "e" ~ "Edible",[m
+[31m-  TRUE ~ "Poisonous")[m
+ [m
+ df <- mutate(df,[m
+[31m- #            class = case_when(!!! case.class),[m
+[31m- #            cap.color = case_when(!!! case.cap.color),[m
+[31m- #            odor = case_when(!!! case.odor),[m
+[31m-             habitat1 = case_when(!!! case.habitat))[m
+[31m-[m
+[31m-df <- mutate(df, class = case_when(!!! case.class))[m
+[31m-head(df)[m
+[32m+[m[32m             classification = case_when(!!! case.class),[m
+[32m+[m[32m             cap.shape = case_when(!!! case.cap.shape),[m
+[32m+[m[32m             cap.surface = case_when(!!! case.cap.surface),[m
+[32m+[m[32m             cap.color = case_when(!!! case.cap.color),[m
+[32m+[m[32m             bruises = case_when(!!! case.bruises),[m
+[32m+[m[32m             odor = case_when(!!! case.odor),[m
+[32m+[m[32m             gill.attachment = case_when(!!! case.gill.attachment),[m
+[32m+[m[32m             gill.spacing = case_when(!!! case.gill.spacing),[m
+[32m+[m[32m             gill.size = case_when(!!! case.gill.size),[m
+[32m+[m[32m             gill.color = case_when(!!! case.gill.color),[m
+[32m+[m[32m             stalk.shape = case_when(!!! case.stalk.shape),[m
+[32m+[m[32m             stalk.root = case_when(!!! case.stalk.root),[m
+[32m+[m[32m             stalk.surface.above.ring = case_when(!!! case.stalk.surface.above.ring),[m
+[32m+[m[32m             stalk.surface.below.ring = case_when(!!! case.stalk.surface.below.ring),[m
+[32m+[m[32m             stalk.color.above.ring = case_when(!!! case.stalk.color.above.ring),[m
+[32m+[m[32m             stalk.color.below.ring = case_when(!!! case.stalk.color.below.ring),[m
+[32m+[m[32m             veil.type = case_when(!!! case.veil.type),[m
+[32m+[m[32m             veil.color = case_when(!!! case.veil.color),[m
+[32m+[m[32m             ring.number = case_when(!!! case.ring.number),[m
+[32m+[m[32m             ring.type = case_when(!!! case.ring.type),[m
+[32m+[m[32m             spore.print.color = case_when(!!! case.spore.print.color),[m
+[32m+[m[32m             population = case_when(!!! case.population),[m
+[32m+[m[32m             habitat = case_when(!!! case.habitat))[m
+ [m
+ [m
+ [m
+[31m-unique(df$cap.color)[m

@@ -2,6 +2,8 @@
 rm(list = ls())
 options(scipen = 999)
 library(dplyr)
+library(randomForest)
+library(caret)
 
 ### READING SOURCE FILE ####
 
@@ -217,8 +219,96 @@ df <- mutate(df,
 
 df <- data.frame(lapply(df, FUN = as.factor))
 
-#### SUMMARY STATS #####
+#### RANDOM FOREST CLASSIFICATION #####
 
-summary(df)
+## SLICING TRAIN AND TEST DATA nrow(train) | nrow(test)
+set.seed(1)
+splitSample <- sample(2, nrow(df), replace = T, prob = c(0.75,0.25))
+train <- df[splitSample==1,]
+test <- df[splitSample==2,]
+
+### RUNNING RANDOM MODEL WITH DEFAULT PARAMETERS
+
+set.seed(99)
+rfModel <- randomForest(classification ~., data = train, ntree )
+print(rfModel)
 
 
+### PREDICTION AND CONFUSION MATRIX
+
+pred1 <- predict(rfModel, train)
+
+confusionMatrix(pred1, train$classification)
+
+pred2 <- predict(rfModel, test)
+
+confusionMatrix(pred2, test$classification)
+
+### Plotting Error Rates
+# The plots provide an idea on the number of trees that may be required to run the random forest analysis
+
+plot(rfModel)
+
+## Tuning data
+
+# The current model has 100% accuracy. In case, our model would have been
+# less accurate, then model tuning would help in such cases
+
+#tuned <- tuneRF(train[,-1], train[,1],
+#                stepFactor = 0.5,
+ #               plot = T,
+  #              ntreeTry = 50,
+   #             trace = T,
+    #            improve = 0.05)
+
+# No. of nodes for the trees:
+
+hist(treesize(rfModel), 
+              main = "No. of nodes for the Trees",
+              col="blue")
+
+# Looks like for this current model, there are more number of 15 nodes
+
+varUsed(rfModel)
+
+#### IMPORTANT VARIABLES FOR PREDICTING THE MODEL
+
+varImp(rfModel)
+varImpPlot(rfModel)
+
+keepCols <- c(which(names(train) == "odor"),
+              which(names(train) == "spore.print.color"),
+              which(names(train) == "gill.color"),
+              which(names(train) == "gill.size"),
+              which(names(train) == "stalk.surface.above.ring"),
+              which(names(train) == "ring.type"),
+              which(names(train) == "stalk.surface.below.ring"),
+              which(names(train) == "population"),
+              which(names(train) == "habitat"),
+              which(names(train) == "stalk.root"))
+
+cols <- c("odor", "spore.print.color", "gill.color", "stalk.surface.above.ring")
+
+tunedModel <- randomForest(train[,keepCols], y = train[,1], data = train, 
+                          ntree = 1)
+print(tunedModel)
+
+pred1 <- predict(tunedModel, train)
+
+confusionMatrix(pred1, train$classification)
+
+pred2 <- predict(tunedModel, test)
+
+confusionMatrix(pred2, test$classification)
+
+varImp(tunedModel)
+varUsed(tunedModel)
+
+library(psych)
+
+
+intTrain <- data.frame(lapply(train, FUN = as.integer))
+parameters <- intTrain[,-1]
+
+
+cronAlpha <- psych::alpha(parameters)
